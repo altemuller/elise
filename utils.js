@@ -25,7 +25,6 @@ async function getHeroes() {
         }
         heroes.sort();
         console.log('Database heroes update in ' + new Date());
-        return heroes;
     }).catch((error) => {
         console.error(error);
     })

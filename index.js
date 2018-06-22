@@ -14,7 +14,7 @@ updates.hear(/^(bot|elise)\s(\w+)/i, async (context) => {
 });
 
 async function run() {
-	heroes = await getHeroes();
+	await getHeroes();
 	await vk.updates.startPolling();
 	setTimeout(() => {
 		getHeroes();
