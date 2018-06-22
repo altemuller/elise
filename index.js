@@ -16,7 +16,7 @@ updates.hear(/^(bot|elise)\s(\w+)/i, async (context) => {
 async function run() {
 	await getHeroes();
 	await vk.updates.startPolling();
-	setTimeout(async () => {
+	setInterval(async () => {
 		await getHeroes();
 	}, 720000);
 	console.log('Polling started');
