@@ -13,14 +13,6 @@ updates.hear(/^(bot|elise)\s(\w+)/i, async (context) => {
     heroParse(heroVariations, 0, context);
 });
 
-updates.hear(/^wiki\s(\w+)\s(\w+)/i, async (context) => {
-	wikiParse(context.$match[1], context.$match[2], context)
-});
-
-updates.hear(/^wiki\s(\w+)/i, async (context) => {
-	wikiParse(context.$match[1], null, context)
-});
-
 async function run() {
 	await getHeroes();
 	await vk.updates.startPolling();
