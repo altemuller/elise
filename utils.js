@@ -104,8 +104,8 @@ function wikiParse(page, option, context) {
 
         rp(options).then(($) => {
             if (option == 'info' || option == null) {
-                context.send($('#Profile').parent().parent().children('p').eq(1).text());
-                context.send($('#Profile').parent().parent().children('p').eq(2).text());
+                context.send($('#WikiaArticle').children('p').eq(1).text());
+                context.send($('#WikiaArticle').children('p').eq(2).text());
             }
 
             if (option == 'supports') {
