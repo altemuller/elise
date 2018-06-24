@@ -127,7 +127,7 @@ function wikiParse(page, option, context) {
                 }
             }
         }).catch((error) => {
-            console.error(error)
+            context.send('Я не нашла такую страницу.');
         })
     }).catch((error) => {
         console.log(error);
