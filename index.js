@@ -17,7 +17,7 @@ updates.hear(/^wiki\s(\w+)\s(\w+)/i, async (context) => {
 	wikiParse(context.$match[1], context.$match[2], context)
 });
 
-updates.hear(/^wiki\s(.*)/i, async (context) => {
+updates.hear(/^wiki\s(\w+)/i, async (context) => {
 	wikiParse(context.$match[1], null, context)
 });
 
