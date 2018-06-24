@@ -82,6 +82,58 @@ function heroParse(heroVariations, index, context) {
     })
 }
 
+function wikiParse(page, option, context) {
+    let options = {
+        uri: `http://fireemblem.wikia.com/api/v1/SearchSuggestions/List?query=${page}`
+    }
+
+    rp(options).then((data) => {
+        let items = JSON.parse(data).items;
+        items.forEach((item) => {
+            if (item.title.toLowerCase() == page.toLowerCase() || item.title.indexOf('character') != -1) {
+                page = item.title;
+            }
+        });
+
+        options = {
+            uri: `http://fireemblem.wikia.com/wiki/${page}`,
+            transform: function (body) {
+                return cheerio.load(body);
+            }
+        }
+
+        rp(options).then(($) => {
+            if (option == 'info' || option == null) {
+                context.send($('#Profile').parent().parent().children('p').eq(1).text());
+                context.send($('#Profile').parent().parent().children('p').eq(2).text());
+            }
+
+            if (option == 'supports') {
+                let result = '';
+                $('#mw-content-text p b').each(function (i, elem) {
+                    if ($(this).text() == 'Romantic Supports') {
+                        result += 'Romantic Supports:\n' + $(this).parent().next().text() + '\n'
+                    }
+
+                    if ($(this).text() == 'Other Supports') {
+                        result += 'Other Supports:\n' + $(this).parent().next().text() + '\n'
+                    }
+                })
+
+                if (!result) {
+                    context.send('Я не нашла supports.');
+                } else {
+                    context.send(result);
+                }
+            }
+        }).catch((error) => {
+            console.error(error)
+        })
+    }).catch((error) => {
+        console.log(error);
+    })
+}
+
 function getHeroesStatic() {
     return heroes;
 }
@@ -89,4 +141,5 @@ function getHeroesStatic() {
 module.exports.getHeroes = getHeroes;
 module.exports.heroSearch = heroSearch;
 module.exports.heroParse = heroParse;
+module.exports.wikiParse = wikiParse;
 module.exports.getHeroesStatic = getHeroesStatic;
