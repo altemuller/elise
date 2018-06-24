@@ -104,8 +104,13 @@ function wikiParse(page, option, context) {
 
         rp(options).then(($) => {
             if (option == 'info' || option == null) {
-                context.send($('#mw-content-text p').not('aside').children('p').eq(1).text());
-                context.send($('#mw-content-text p').not('aside').children('p').eq(2).text());
+                if ($('#Profile') == null) {
+                    context.send($('#Overview').parent().parent().children('p').eq(1).text());
+                    context.send($('#Overview').parent().parent().children('p').eq(2).text());
+                } else {
+                    context.send($('#Profile').parent().parent().children('p').eq(1).text());
+                    context.send($('#Profile').parent().parent().children('p').eq(2).text());
+                }
             }
 
             if (option == 'supports') {
