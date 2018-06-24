@@ -104,6 +104,7 @@ function wikiParse(page, option, context) {
 
         rp(options).then(($) => {
             if (option == 'info' || option == null) {
+                console.log($('#Profile'));
                 if ($('#Profile') == null) {
                     context.send($('#Overview').parent().parent().children('p').eq(1).text());
                     context.send($('#Overview').parent().parent().children('p').eq(2).text());
