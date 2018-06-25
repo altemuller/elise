@@ -9,7 +9,7 @@ const vk = new VK({
 const { updates } = vk;
 
 updates.hear(/^(bot|elise)\s(\w+)/i, async (context) => {
-	utils.heroParse(await utils.heroVariations(context.$match[2]), 0, context);
+	await utils.heroParse(utils.heroVariations(context.$match[2]), 0, context);
 });
 
 async function run() {
