@@ -1,92 +1,80 @@
-const rp = require('request-promise');
+'use strict';
+
+// Modules
+const axios = require('axios');
 const cheerio = require('cheerio');
-const cheerioTableparser = require('cheerio-tableparser');
-const table = require('text-table');
-const levenshtein = require('fast-levenshtein');
+const tableParser = require('cheerio-tableparser');
+const textTable = require('text-table');
+const ls = require('fast-levenshtein');
 
-let heroes = [];
+module.exports = class utils {
+    static async getHeroes() {
+        try {
+            const { data } = await axios.get('https://feheroes.gamepedia.com/Hero_list');
+            const $ = cheerio.load(data);
+            tableParser($);
 
-async function getHeroes() {
-    const options = {
-        uri: `https://feheroes.gamepedia.com/Hero_list`,
-        transform: function (body) {
-          return cheerio.load(body);
-        }
-    }
-    
-    rp(options).then(($) => {
-        cheerioTableparser($);
-        let table = $('table[style="text-align:center;width:100%"]').eq(0).parsetable(false, false, true);
-        let name = table[1].slice(1, table[1].length);
-        let title = table[2].slice(1, table[1].length);
-        heroes = [];
-        for (let i = 0; i < name.length; i++) {
-            heroes.push(`${name[i]}: ${title[i]}`);
-        }
-        heroes.sort();
-        console.log('Database heroes update in ' + new Date());
-    }).catch((error) => {
-        console.error(error);
-    })
-}
+            const tableHeroes = $('table[style="text-align:center;width:100%"]').eq(0).parsetable(false, false, true);
+            const tableHeroesNames = tableHeroes[1].slice(1);
+            const tableHeroesTitles = tableHeroes[2].slice(1)
 
-async function heroSearch(hero, heroes) {
-    let heroName = hero;
-    let selectedHero = '';
-    let heroVariations = [];
-    let maxProbability = 0;
-    
-    heroes.forEach((dbHeroName) => {
-        let levenshteinResult = levenshtein.get(heroName.toLowerCase(), dbHeroName.toLowerCase().substring(0, dbHeroName.indexOf(':')));
-        let probability = Math.round((dbHeroName.length - levenshteinResult) * 100 / dbHeroName.length);
-        
-        if (probability >= maxProbability) {
-            maxProbability = probability;
-            selectedHero = dbHeroName;
-        }
-    })
+            this.heroes = [];
+            for (let i = 0; i < tableHeroesNames.length; i++) {
+                this.heroes.push(`${tableHeroesNames[i]}: ${tableHeroesTitles[i]}`);
+            }
 
-    let selectedHeroName = selectedHero.substring(0, selectedHero.indexOf(':'));
-
-    heroes.forEach((hero) => {
-        let heroName = hero.substring(0, hero.indexOf(':'));
-        if (heroName == selectedHeroName) {
-            console.log(`Get IV: ${hero}.`);
-            heroVariations.push(hero);
-        }
-    })
-
-    return heroVariations;
-}
-
-function heroParse(heroVariations, index, context) {
-    let hero = heroVariations[index];
-    const options = {
-        uri: `https://feheroes.gamepedia.com/${hero.replace(/\s/g, '_')}`,
-        transform: function (body) {
-          return cheerio.load(body);
+            this.heroes.sort();
+            console.log(`Database update: ${ new Date() }`);
+        } catch (error) {
+            console.error(error);
         }
     }
 
-    rp(options).then(($) => {
-        cheerioTableparser($);
-        let min = $('table[style="text-align:center;width:500px"]').eq(0).parsetable(false, false, true);
-        let max = $('table[style="text-align:center;width:500px"]').eq(1).parsetable(false, false, true);
-        context.send(`${hero}\nMin:\n${table(min)}\n\nMax:\n${table(max)}`);
-        index++;
-        if (index != heroVariations.length) {
-            heroParse(heroVariations, index, context);
+    static heroVariations(hero) {
+        let maxProbability = 0;
+        let selectedHero = '';
+        let heroVariations = [];
+
+        this.heroes.forEach((heroName) => {
+            let lsResult = ls.get(hero.toLowerCase(), heroName.toLowerCase().substring(0, heroName.indexOf(':')));
+            let probability = Math.round((heroName.length - lsResult) * 100 / heroName.length);
+
+            if (probability >= maxProbability) {
+                maxProbability = probability;
+                selectedHero = heroName;
+            }
+        });
+
+        let selectedHeroName = selectedHero.substring(0, selectedHero.indexOf(':'));
+
+        this.heroes.forEach((hero) => {
+            let heroName = hero.substring(0, hero.indexOf(':'));
+            if (heroName == selectedHeroName) {
+                console.log(`Get IV: ${hero}.`);
+                heroVariations.push(hero);
+            }
+        });
+
+        return heroVariations;
+    }
+
+    static async heroParse(heroVariations, index, context) {
+        try {
+            const hero = heroVariations[index];
+            const { data } = await axios.get(`https://feheroes.gamepedia.com/${hero.replace(/\s/g, '_')}`);
+            const $ = cheerio.load(data);
+            tableParser($);
+    
+            const min = $('table[style="text-align:center;width:500px"]').eq(0).parsetable(false, false, true);
+            const max = $('table[style="text-align:center;width:500px"]').eq(1).parsetable(false, false, true);
+            context.send(`${hero}\nMin:\n${textTable(min)}\n\nMax:\n${textTable(max)}`);
+    
+            index++;
+            if (index != heroVariations.length) {
+                this.heroParse(heroVariations, index, context);
+            }
+        } catch (error) {
+            console.error(error);
         }
-    }).catch((error) => {
-        console.error(error)
-    })
+    }
 }
-
-function getHeroesStatic() {
-    return heroes;
-}
-
-module.exports.getHeroes = getHeroes;
-module.exports.heroSearch = heroSearch;
-module.exports.heroParse = heroParse;
-module.exports.getHeroesStatic = getHeroesStatic;

@@ -1,4 +1,4 @@
-const { getHeroes, heroParse, heroSearch, wikiParse, getHeroesStatic } = require('./utils.js')
+const utils = require('./utils.js')
 const { VK } = require('vk-io');
 
 const vk = new VK({
@@ -9,16 +9,16 @@ const vk = new VK({
 const { updates } = vk;
 
 updates.hear(/^(bot|elise)\s(\w+)/i, async (context) => {
-	const heroVariations = await heroSearch(context.$match[2], getHeroesStatic());
-    heroParse(heroVariations, 0, context);
+	utils.heroParse(await utils.heroVariations(context.$match[2]), 0, context);
 });
 
 async function run() {
-	await getHeroes();
-	await vk.updates.startPolling();
+	await utils.getHeroes();
 	setInterval(async () => {
-		await getHeroes();
+		await utils.getHeroes();
 	}, 720000);
+
+	await vk.updates.startPolling();
 	console.log('Polling started');
 }
 
