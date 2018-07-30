@@ -16,10 +16,14 @@ async function run() {
 	await utils.getHeroes();
 	setInterval(async () => {
 		await utils.getHeroes();
-	}, 720000);
+	}, hour() * 2);
 
 	await vk.updates.startPolling();
 	console.log('Polling started');
+}
+
+function hour() {
+	return 3600000;
 }
 
 run().catch(console.error);
