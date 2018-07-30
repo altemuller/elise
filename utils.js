@@ -34,6 +34,10 @@ module.exports = class utils {
         let maxProbability = 0;
         let selectedHero = '';
         let heroVariations = [];
+        
+        if (!this.heroes) {
+            return 0;
+        }
 
         this.heroes.forEach((heroName) => {
             let lsResult = ls.get(hero.toLowerCase(), heroName.toLowerCase().substring(0, heroName.indexOf(':')));
@@ -59,6 +63,10 @@ module.exports = class utils {
     }
 
     static async heroParse(heroVariations, index, context) {
+        if (heroVariations == 0) {
+            context.send('На данный момент я не работаю.');
+            return;
+        }
         try {
             const hero = heroVariations[index];
             const { data } = await axios.get(`https://feheroes.gamepedia.com/${hero.replace(/\s/g, '_')}`);
