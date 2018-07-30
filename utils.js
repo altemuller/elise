@@ -64,7 +64,7 @@ module.exports = class utils {
 
     static async heroParse(heroVariations, index, context) {
         if (heroVariations == 0) {
-            context.send('На данный момент я не работаю.');
+            context.send('Error: Вики блокирует доступ. Ожидайте.');
             return;
         }
         try {
